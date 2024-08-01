@@ -1,0 +1,219 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expenses Sharing Application</title>
+    
+</head>
+<body>
+    <style>body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333;
+    }
+    
+    header {
+        background-color: #4CAF50;
+        color: white;
+        padding: 20px 0;
+        text-align: center;
+    }
+    
+    header h1 {
+        margin: 0;
+        font-size: 2em;
+    }
+    
+    header a {
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        margin-left: 15px;
+    }
+    
+    header a:hover {
+        text-decoration: underline;
+    }
+    
+    main {
+        padding: 20px;
+        max-width: 800px;
+        margin: auto;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    
+    section {
+        margin-bottom: 40px;
+    }
+    
+    h2 {
+        font-size: 1.5em;
+        color: #4CAF50;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    h2 button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    
+    h2 button:hover {
+        background-color: #45a049;
+    }
+    
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    label {
+        margin: 10px 0 5px;
+        font-weight: bold;
+    }
+    
+    input, select {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-size: 1em;
+    }
+    
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 1em;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+    
+    #balance-sheet-display {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+    }
+    
+    #balance-sheet-display p {
+        margin: 10px 0;
+    }
+    
+    #balance-sheet-display span {
+        font-weight: bold;
+    }
+    
+    #balance-sheet-display h3 {
+        margin-top: 20px;
+        color: #4CAF50;
+    }
+    
+    #list {
+        list-style-type: none;
+        padding: 0;
+    }
+    
+    #list li {
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    #list li:nth-child(odd) {
+        background-color: #f4f4f9;
+    }
+</style>    
+        
+    <header>
+        <h1>Daily Expenses Sharing Application</h1>
+        <a href="{% url 'create_user' %}">Create User</a>
+    </header>
+    
+    <main>
+        <!-- Toggle User Management Section -->
+        <section>
+            <h2>User Management <button onclick="toggleUserManagement()">+</button></h2>
+            <div id="user-management" style="display: none;">
+                <form id="create-user-form" method="POST" action="{% url 'create_user' %}">
+                    {% csrf_token %}
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required><br><br>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required><br><br>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required><br><br>
+                    <button type="submit">Create User</button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Expense Management Section -->
+        <section id="expense-management">
+            <h2>Expense Management</h2>
+            <form id="add-expense-form" method="POST">
+                {% csrf_token %}
+                <label for="type">Type</label>
+                <input type="text" id="type" name="type" required><br><br>
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" name="amount" required><br><br>
+                <label for="method">Split Method:</label>
+                <select id="method" name="method" required>
+                    <option value="equal">Equal</option>
+                    <option value="exact">Exact</option>
+                    <option value="percentage">Percentage</option>
+                </select><br><br>
+                <label for="expense_type">Expense Type:</label>
+                <select name="expense_type">
+                    <option value="Positive">Positive</option>
+                    <option value="Negative">Negative</option>
+                </select>
+                <label for="participants">Participants (comma separated emails):</label>
+                <input type="text" id="participants" name="participants" required><br><br>
+                <button type="submit">Add Expense</button>
+            </form>
+        </section>
+        
+        <!-- Balance Sheet Section -->
+        <section id="balance-sheet">
+            <h2>Balance Sheet</h2>
+            <button id="download-balance-sheet">Download Balance Sheet</button>
+            <div id="balance-sheet-display">
+                <!-- Balance sheet details will be displayed here -->
+                <p>Income: <span id="income">{{ profile.income }}</span></p>
+                <p>Expenses: <span id="expenses">{{ profile.expenses }}</span></p>
+                <p>Total Balance: <span id="total-balance">{{ profile.balance }}</span></p>
+                <h3>History</h3>
+                <ul id="list" class="list">
+                    {% for expense in expenses %}
+                    <li class="minus">
+                        {{ expense.name }} <span>{{ expense.amount }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
