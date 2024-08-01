@@ -13,7 +13,7 @@ The Expense Tracker is a Django-based application designed to help users manage 
 1. **Clone the repository**
     ```sh
     git clone https://github.com/Lakshya0018UP/Expense-Tracker.git
-    cd Expense-Tracker
+    cd home
     ```
 
 2. **Install the dependencies**
